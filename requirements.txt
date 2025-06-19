@@ -1,6 +1,8 @@
 streamlit
-pandas
-matplotlib
-requests
-duckduckgo-search
 deepseek
+requests
+pillow
+pytesseract
+matplotlib
+pymupdf
+duckduckgo_search
