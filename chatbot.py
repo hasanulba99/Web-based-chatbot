@@ -3,7 +3,7 @@ import pandas as pd
 import openai
 
 # ✅ Your DeepSeek API key directly in code (NOT RECOMMENDED for production)
-DEEPSEEK_API_KEY = "sk-7a74d922fab84545b0882179b2479560"
+DEEPSEEK_API_KEY = "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"
 
 class Chatbot:
     def __init__(self, csv_path=None):
