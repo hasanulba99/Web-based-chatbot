@@ -1,29 +1,45 @@
 import streamlit as st
-from chatbot import OllamaChatbot  # Adjust if using a different file/class
 import pandas as pd
+from chatbot import Chatbot
 
-st.set_page_config(page_title="ShadowBot", layout="wide")
-st.title("🤖 ShadowBot - Tech News & CSV Assistant")
+st.set_page_config(page_title="ShadowBot AI", layout="wide")
+st.title("🤖 ShadowBot AI Chat")
 
-# Initialize the chatbot
-if "chatbot" not in st.session_state:
-    st.session_state.chatbot = OllamaChatbot()
+st.markdown("Upload a CSV file and ask any tech-related or data-related question.")
 
-# User input
-user_input = st.text_input("You:", "")
+# Upload CSV
+uploaded_file = st.file_uploader("📄 Upload CSV", type=["csv"])
 
-# Display response
-if user_input:
-    with st.spinner("ShadowBot is thinking..."):
-        response = "".join(st.session_state.chatbot.get_response(user_input))
-        st.markdown(response)
+# Instantiate chatbot
+if uploaded_file:
+    chatbot = Chatbot(csv_path=uploaded_file)
+else:
+    chatbot = Chatbot()
 
-# CSV file uploader for future use
-st.markdown("### 📂 Upload CSV for Analysis")
-csv_file = st.file_uploader("Upload a CSV file", type=["csv"])
-if csv_file is not None:
-    try:
-        df = pd.read_csv(csv_file)
-        st.dataframe(df.head())
-    except Exception as e:
-        st.error(f"Error loading CSV: {e}")
+# Text input
+query = st.text_input("💬 Ask me anything:")
+
+# Optional checkboxes
+col1, col2 = st.columns(2)
+with col1:
+    tech_news = st.checkbox("📰 Ask for Tech News")
+with col2:
+    search_summary = st.checkbox("🔍 Ask for Web Summary")
+
+# Ask button
+if st.button("Ask ShadowBot"):
+    if query:
+        with st.spinner("Thinking..."):
+            response = chatbot.process_query(query, tech_news=tech_news, search_summary=search_summary)
+
+            # Display response
+            if isinstance(response, str):
+                st.markdown("### 🧠 Response:")
+                st.write(response)
+            elif isinstance(response, list):
+                st.markdown("### 📊 Matching Rows:")
+                st.dataframe(pd.DataFrame(response))
+            else:
+                st.warning("🤷 Unexpected response format.")
+    else:
+        st.warning("Please enter a query.")
