@@ -2,19 +2,17 @@ import streamlit as st
 import pandas as pd
 import openai
 
+# ✅ Your DeepSeek API key directly in code (NOT RECOMMENDED for production)
+DEEPSEEK_API_KEY = "sk-7a74d922fab84545b0882179b2479560"
+
 class Chatbot:
     def __init__(self, csv_path=None):
-        if csv_path:
-            self.data = pd.read_csv(csv_path)
-        else:
-            self.data = None
-
-        # Hardcoded API key here — replace YOUR_API_KEY_HERE with your actual key
-        openai.api_key = "sk-7a74d922fab84545b0882179b2479560"
+        self.data = pd.read_csv(csv_path) if csv_path else None
+        self.client = openai.OpenAI(api_key=DEEPSEEK_API_KEY)
 
     def _call_deepseek(self, prompt):
         try:
-            response = openai.ChatCompletion.create(
+            response = self.client.chat.completions.create(
                 model="deepseek-coder",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=512,
@@ -34,7 +32,9 @@ class Chatbot:
 
     def ask(self, query):
         if self.data is not None:
-            filtered = self.data[self.data.apply(lambda row: query.lower() in row.astype(str).str.lower().to_string(), axis=1)]
+            filtered = self.data[
+                self.data.apply(lambda row: query.lower() in row.astype(str).str.lower().to_string(), axis=1)
+            ]
             if not filtered.empty:
                 return filtered.to_dict(orient='records')
 
@@ -45,28 +45,4 @@ class Chatbot:
             return self.get_tech_news(query)
         if search_summary:
             return self.summarize_search(query)
-
         return self.ask(query)
-
-
-def main():
-    st.title("DeepSeek Chatbot")
-    uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
-    if uploaded_file:
-        chatbot = Chatbot(csv_path=uploaded_file)
-    else:
-        chatbot = Chatbot()
-
-    query = st.text_input("Enter your query:")
-    tech_news = st.checkbox("Include Tech News")
-    search_summary = st.checkbox("Include Search Summary")
-
-    if st.button("Ask"):
-        if query:
-            response = chatbot.process_query(query, tech_news=tech_news, search_summary=search_summary)
-            st.write(response)
-        else:
-            st.warning("Please enter a query.")
-
-if __name__ == "__main__":
-    main()
