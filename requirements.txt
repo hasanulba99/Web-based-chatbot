@@ -1,0 +1,6 @@
+streamlit
+pandas
+matplotlib
+requests
+duckduckgo-search
+deepseek
